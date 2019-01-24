@@ -5,6 +5,7 @@ MAINTAINER ekuaibao
 ENV APP_HOME=/app
 ENV CONF_ZK_SERVER=zookeeper:2181
 ENV CONF_ZK_PATH=/sentinel
+ENV CONF_CONTEXT_PATH=/api/sentinel
 
 COPY target/sentinel-dashboard.jar /app/lib/sentinel-dashboard.jar
 COPY startup.sh /app/bin/startup.sh
