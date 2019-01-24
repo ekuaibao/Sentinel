@@ -78,24 +78,26 @@ public class SentinelApiClient {
 
     private static final Charset DEFAULT_CHARSET = Charset.forName(SentinelConfig.charset());
 
-    private static final String RESOURCE_URL_PATH = "jsonTree";
-    private static final String CLUSTER_NODE_PATH = "clusterNode";
-    private static final String GET_RULES_PATH = "getRules";
-    private static final String SET_RULES_PATH = "setRules";
-    private static final String GET_PARAM_RULE_PATH = "getParamFlowRules";
-    private static final String SET_PARAM_RULE_PATH = "setParamFlowRules";
+    public static final String CONTEXT_PATH = "api/sentinel/";
 
-    private static final String FETCH_CLUSTER_MODE_PATH = "getClusterMode";
-    private static final String MODIFY_CLUSTER_MODE_PATH = "setClusterMode";
-    private static final String FETCH_CLUSTER_CLIENT_CONFIG_PATH = "cluster/client/fetchConfig";
-    private static final String MODIFY_CLUSTER_CLIENT_CONFIG_PATH = "cluster/client/modifyConfig";
+    private static final String RESOURCE_URL_PATH = CONTEXT_PATH + "jsonTree";
+    private static final String CLUSTER_NODE_PATH = CONTEXT_PATH + "clusterNode";
+    private static final String GET_RULES_PATH = CONTEXT_PATH + "getRules";
+    private static final String SET_RULES_PATH = CONTEXT_PATH + "setRules";
+    private static final String GET_PARAM_RULE_PATH = CONTEXT_PATH + "getParamFlowRules";
+    private static final String SET_PARAM_RULE_PATH = CONTEXT_PATH + "setParamFlowRules";
 
-    private static final String FETCH_CLUSTER_SERVER_ALL_CONFIG_PATH = "cluster/server/fetchConfig";
-    private static final String FETCH_CLUSTER_SERVER_BASIC_INFO_PATH = "cluster/server/info";
+    private static final String FETCH_CLUSTER_MODE_PATH = CONTEXT_PATH + "getClusterMode";
+    private static final String MODIFY_CLUSTER_MODE_PATH = CONTEXT_PATH + "setClusterMode";
+    private static final String FETCH_CLUSTER_CLIENT_CONFIG_PATH = CONTEXT_PATH + "cluster/client/fetchConfig";
+    private static final String MODIFY_CLUSTER_CLIENT_CONFIG_PATH = CONTEXT_PATH + "cluster/client/modifyConfig";
 
-    private static final String MODIFY_CLUSTER_SERVER_TRANSPORT_CONFIG_PATH = "cluster/server/modifyTransportConfig";
-    private static final String MODIFY_CLUSTER_SERVER_FLOW_CONFIG_PATH = "cluster/server/modifyFlowConfig";
-    private static final String MODIFY_CLUSTER_SERVER_NAMESPACE_SET_PATH = "cluster/server/modifyNamespaceSet";
+    private static final String FETCH_CLUSTER_SERVER_ALL_CONFIG_PATH = CONTEXT_PATH + "cluster/server/fetchConfig";
+    private static final String FETCH_CLUSTER_SERVER_BASIC_INFO_PATH = CONTEXT_PATH + "cluster/server/info";
+
+    private static final String MODIFY_CLUSTER_SERVER_TRANSPORT_CONFIG_PATH = CONTEXT_PATH + "cluster/server/modifyTransportConfig";
+    private static final String MODIFY_CLUSTER_SERVER_FLOW_CONFIG_PATH = CONTEXT_PATH + "cluster/server/modifyFlowConfig";
+    private static final String MODIFY_CLUSTER_SERVER_NAMESPACE_SET_PATH = CONTEXT_PATH + "cluster/server/modifyNamespaceSet";
 
     private static final String FLOW_RULE_TYPE = "flow";
     private static final String DEGRADE_RULE_TYPE = "degrade";
@@ -108,7 +110,7 @@ public class SentinelApiClient {
 
     public SentinelApiClient() {
         IOReactorConfig ioConfig = IOReactorConfig.custom().setConnectTimeout(3000).setSoTimeout(10000)
-            .setIoThreadCount(Runtime.getRuntime().availableProcessors() * 2).build();
+                .setIoThreadCount(Runtime.getRuntime().availableProcessors() * 2).build();
         httpClient = HttpAsyncClients.custom().setRedirectStrategy(new DefaultRedirectStrategy() {
             @Override
             protected boolean isRedirectable(final String method) {
@@ -268,7 +270,7 @@ public class SentinelApiClient {
         List<FlowRule> rules = RuleUtils.parseFlowRule(body);
         if (rules != null) {
             return rules.stream().map(rule -> FlowRuleEntity.fromFlowRule(app, ip, port, rule))
-                .collect(Collectors.toList());
+                    .collect(Collectors.toList());
         } else {
             return null;
         }
@@ -281,7 +283,7 @@ public class SentinelApiClient {
         List<DegradeRule> rules = RuleUtils.parseDegradeRule(body);
         if (rules != null) {
             return rules.stream().map(rule -> DegradeRuleEntity.fromDegradeRule(app, ip, port, rule))
-                .collect(Collectors.toList());
+                    .collect(Collectors.toList());
         } else {
             return null;
         }
@@ -294,7 +296,7 @@ public class SentinelApiClient {
         List<SystemRule> rules = RuleUtils.parseSystemRule(body);
         if (rules != null) {
             return rules.stream().map(rule -> SystemRuleEntity.fromSystemRule(app, ip, port, rule))
-                .collect(Collectors.toList());
+                    .collect(Collectors.toList());
         } else {
             return null;
         }
@@ -317,13 +319,13 @@ public class SentinelApiClient {
             URIBuilder uriBuilder = new URIBuilder();
             String commandName = GET_PARAM_RULE_PATH;
             uriBuilder.setScheme("http").setHost(ip).setPort(port)
-                .setPath(commandName);
+                    .setPath(commandName);
             return executeCommand(commandName, uriBuilder.build())
-                .thenApply(RuleUtils::parseParamFlowRule)
-                .thenApply(rules -> rules.stream()
-                    .map(e -> ParamFlowRuleEntity.fromAuthorityRule(app, ip, port, e))
-                    .collect(Collectors.toList())
-                );
+                    .thenApply(RuleUtils::parseParamFlowRule)
+                    .thenApply(rules -> rules.stream()
+                            .map(e -> ParamFlowRuleEntity.fromAuthorityRule(app, ip, port, e))
+                            .collect(Collectors.toList())
+                    );
         } catch (Exception e) {
             logger.error("Error when fetching parameter flow rules", e);
             return AsyncUtils.newFailedFuture(e);
@@ -345,17 +347,17 @@ public class SentinelApiClient {
         AssertUtil.isTrue(port > 0, "Bad machine port");
         URIBuilder uriBuilder = new URIBuilder();
         uriBuilder.setScheme("http").setHost(ip).setPort(port)
-            .setPath(GET_RULES_PATH)
-            .setParameter("type", AUTHORITY_TYPE);
+                .setPath(GET_RULES_PATH)
+                .setParameter("type", AUTHORITY_TYPE);
         try {
             String body = httpGetContent(uriBuilder.build().toString());
             return Optional.ofNullable(body)
-                .map(RuleUtils::parseAuthorityRule)
-                .map(rules -> rules.stream()
-                    .map(e -> AuthorityRuleEntity.fromAuthorityRule(app, ip, port, e))
-                    .collect(Collectors.toList())
-                )
-                .orElse(null);
+                    .map(RuleUtils::parseAuthorityRule)
+                    .map(rules -> rules.stream()
+                            .map(e -> AuthorityRuleEntity.fromAuthorityRule(app, ip, port, e))
+                            .collect(Collectors.toList())
+                    )
+                    .orElse(null);
         } catch (URISyntaxException e) {
             logger.error("Error when fetching authority rules", e);
             return null;
@@ -410,7 +412,7 @@ public class SentinelApiClient {
             throw new IllegalArgumentException("ip is null");
         }
         String data = JSON.toJSONString(
-            rules.stream().map(DegradeRuleEntity::toDegradeRule).collect(Collectors.toList()));
+                rules.stream().map(DegradeRuleEntity::toDegradeRule).collect(Collectors.toList()));
         try {
             data = URLEncoder.encode(data, DEFAULT_CHARSET.name());
         } catch (UnsupportedEncodingException e) {
@@ -418,7 +420,7 @@ public class SentinelApiClient {
             return false;
         }
         String url = "http://" + ip + ":" + port + "/" + SET_RULES_PATH + "?type=" + DEGRADE_RULE_TYPE + "&data="
-            + data;
+                + data;
         String result = httpGetContent(url);
         logger.info("setDegradeRule: " + result);
         return true;
@@ -442,7 +444,7 @@ public class SentinelApiClient {
             throw new IllegalArgumentException("ip is null");
         }
         String data = JSON.toJSONString(
-            rules.stream().map(SystemRuleEntity::toSystemRule).collect(Collectors.toList()));
+                rules.stream().map(SystemRuleEntity::toSystemRule).collect(Collectors.toList()));
         try {
             data = URLEncoder.encode(data, DEFAULT_CHARSET.name());
         } catch (UnsupportedEncodingException e) {
@@ -463,7 +465,7 @@ public class SentinelApiClient {
             throw new IllegalArgumentException("Invalid IP or port");
         }
         String data = JSON.toJSONString(
-            rules.stream().map(AuthorityRuleEntity::getRule).collect(Collectors.toList()));
+                rules.stream().map(AuthorityRuleEntity::getRule).collect(Collectors.toList()));
         try {
             data = URLEncoder.encode(data, DEFAULT_CHARSET.name());
         } catch (UnsupportedEncodingException e) {
@@ -485,22 +487,22 @@ public class SentinelApiClient {
         }
         try {
             String data = JSON.toJSONString(
-                rules.stream().map(ParamFlowRuleEntity::getRule).collect(Collectors.toList())
+                    rules.stream().map(ParamFlowRuleEntity::getRule).collect(Collectors.toList())
             );
             data = URLEncoder.encode(data, DEFAULT_CHARSET.name());
             URIBuilder uriBuilder = new URIBuilder();
             uriBuilder.setScheme("http").setHost(ip).setPort(port)
-                .setPath(SET_PARAM_RULE_PATH)
-                .setParameter("data", data);
+                    .setPath(SET_PARAM_RULE_PATH)
+                    .setParameter("data", data);
             return executeCommand(SET_PARAM_RULE_PATH, uriBuilder.build())
-                .thenCompose(e -> {
-                    if (CommandConstants.MSG_SUCCESS.equals(e)) {
-                        return CompletableFuture.completedFuture(null);
-                    } else {
-                        logger.warn("Push parameter flow rules to client failed: " + e);
-                        return AsyncUtils.newFailedFuture(new RuntimeException(e));
-                    }
-                });
+                    .thenCompose(e -> {
+                        if (CommandConstants.MSG_SUCCESS.equals(e)) {
+                            return CompletableFuture.completedFuture(null);
+                        } else {
+                            logger.warn("Push parameter flow rules to client failed: " + e);
+                            return AsyncUtils.newFailedFuture(new RuntimeException(e));
+                        }
+                    });
         } catch (Exception ex) {
             logger.warn("Error when setting parameter flow rule", ex);
             return AsyncUtils.newFailedFuture(ex);
@@ -516,9 +518,9 @@ public class SentinelApiClient {
         try {
             URIBuilder uriBuilder = new URIBuilder();
             uriBuilder.setScheme("http").setHost(ip).setPort(port)
-                .setPath(FETCH_CLUSTER_MODE_PATH);
+                    .setPath(FETCH_CLUSTER_MODE_PATH);
             return executeCommand(FETCH_CLUSTER_MODE_PATH, uriBuilder.build())
-                .thenApply(r -> JSON.parseObject(r, ClusterStateSimpleEntity.class));
+                    .thenApply(r -> JSON.parseObject(r, ClusterStateSimpleEntity.class));
         } catch (Exception ex) {
             logger.warn("Error when fetching cluster mode", ex);
             return AsyncUtils.newFailedFuture(ex);
@@ -532,17 +534,17 @@ public class SentinelApiClient {
         try {
             URIBuilder uriBuilder = new URIBuilder();
             uriBuilder.setScheme("http").setHost(ip).setPort(port)
-                .setPath(MODIFY_CLUSTER_MODE_PATH)
-                .setParameter("mode", String.valueOf(mode));
+                    .setPath(MODIFY_CLUSTER_MODE_PATH)
+                    .setParameter("mode", String.valueOf(mode));
             return executeCommand(MODIFY_CLUSTER_MODE_PATH, uriBuilder.build())
-                .thenCompose(e -> {
-                    if (CommandConstants.MSG_SUCCESS.equals(e)) {
-                        return CompletableFuture.completedFuture(null);
-                    } else {
-                        logger.warn("Error when modifying cluster mode: " + e);
-                        return AsyncUtils.newFailedFuture(new RuntimeException(e));
-                    }
-                });
+                    .thenCompose(e -> {
+                        if (CommandConstants.MSG_SUCCESS.equals(e)) {
+                            return CompletableFuture.completedFuture(null);
+                        } else {
+                            logger.warn("Error when modifying cluster mode: " + e);
+                            return AsyncUtils.newFailedFuture(new RuntimeException(e));
+                        }
+                    });
         } catch (Exception ex) {
             logger.warn("Error when modifying cluster mode", ex);
             return AsyncUtils.newFailedFuture(ex);
@@ -556,9 +558,9 @@ public class SentinelApiClient {
         try {
             URIBuilder uriBuilder = new URIBuilder();
             uriBuilder.setScheme("http").setHost(ip).setPort(port)
-                .setPath(FETCH_CLUSTER_CLIENT_CONFIG_PATH);
+                    .setPath(FETCH_CLUSTER_CLIENT_CONFIG_PATH);
             return executeCommand(FETCH_CLUSTER_CLIENT_CONFIG_PATH, uriBuilder.build())
-                .thenApply(r -> JSON.parseObject(r, ClusterClientInfoVO.class));
+                    .thenApply(r -> JSON.parseObject(r, ClusterClientInfoVO.class));
         } catch (Exception ex) {
             logger.warn("Error when fetching cluster client config", ex);
             return AsyncUtils.newFailedFuture(ex);
@@ -572,17 +574,17 @@ public class SentinelApiClient {
         try {
             URIBuilder uriBuilder = new URIBuilder();
             uriBuilder.setScheme("http").setHost(ip).setPort(port)
-                .setPath(MODIFY_CLUSTER_CLIENT_CONFIG_PATH)
-                .setParameter("data", JSON.toJSONString(config));
+                    .setPath(MODIFY_CLUSTER_CLIENT_CONFIG_PATH)
+                    .setParameter("data", JSON.toJSONString(config));
             return executeCommand(MODIFY_CLUSTER_MODE_PATH, uriBuilder.build())
-                .thenCompose(e -> {
-                    if (CommandConstants.MSG_SUCCESS.equals(e)) {
-                        return CompletableFuture.completedFuture(null);
-                    } else {
-                        logger.warn("Error when modifying cluster client config: " + e);
-                        return AsyncUtils.newFailedFuture(new RuntimeException(e));
-                    }
-                });
+                    .thenCompose(e -> {
+                        if (CommandConstants.MSG_SUCCESS.equals(e)) {
+                            return CompletableFuture.completedFuture(null);
+                        } else {
+                            logger.warn("Error when modifying cluster client config: " + e);
+                            return AsyncUtils.newFailedFuture(new RuntimeException(e));
+                        }
+                    });
         } catch (Exception ex) {
             logger.warn("Error when modifying cluster client config", ex);
             return AsyncUtils.newFailedFuture(ex);
@@ -596,17 +598,17 @@ public class SentinelApiClient {
         try {
             URIBuilder uriBuilder = new URIBuilder();
             uriBuilder.setScheme("http").setHost(ip).setPort(port)
-                .setPath(MODIFY_CLUSTER_SERVER_FLOW_CONFIG_PATH)
-                .setParameter("data", JSON.toJSONString(config));
+                    .setPath(MODIFY_CLUSTER_SERVER_FLOW_CONFIG_PATH)
+                    .setParameter("data", JSON.toJSONString(config));
             return executeCommand(MODIFY_CLUSTER_SERVER_FLOW_CONFIG_PATH, uriBuilder.build())
-                .thenCompose(e -> {
-                    if (CommandConstants.MSG_SUCCESS.equals(e)) {
-                        return CompletableFuture.completedFuture(null);
-                    } else {
-                        logger.warn("Error when modifying cluster server flow config: " + e);
-                        return AsyncUtils.newFailedFuture(new RuntimeException(e));
-                    }
-                });
+                    .thenCompose(e -> {
+                        if (CommandConstants.MSG_SUCCESS.equals(e)) {
+                            return CompletableFuture.completedFuture(null);
+                        } else {
+                            logger.warn("Error when modifying cluster server flow config: " + e);
+                            return AsyncUtils.newFailedFuture(new RuntimeException(e));
+                        }
+                    });
         } catch (Exception ex) {
             logger.warn("Error when modifying cluster server flow config", ex);
             return AsyncUtils.newFailedFuture(ex);
@@ -620,18 +622,18 @@ public class SentinelApiClient {
         try {
             URIBuilder uriBuilder = new URIBuilder();
             uriBuilder.setScheme("http").setHost(ip).setPort(port)
-                .setPath(MODIFY_CLUSTER_SERVER_TRANSPORT_CONFIG_PATH)
-                .setParameter("port", config.getPort().toString())
-                .setParameter("idleSeconds", config.getIdleSeconds().toString());
+                    .setPath(MODIFY_CLUSTER_SERVER_TRANSPORT_CONFIG_PATH)
+                    .setParameter("port", config.getPort().toString())
+                    .setParameter("idleSeconds", config.getIdleSeconds().toString());
             return executeCommand(MODIFY_CLUSTER_SERVER_TRANSPORT_CONFIG_PATH, uriBuilder.build())
-                .thenCompose(e -> {
-                    if (CommandConstants.MSG_SUCCESS.equals(e)) {
-                        return CompletableFuture.completedFuture(null);
-                    } else {
-                        logger.warn("Error when modifying cluster server transport config: " + e);
-                        return AsyncUtils.newFailedFuture(new RuntimeException(e));
-                    }
-                });
+                    .thenCompose(e -> {
+                        if (CommandConstants.MSG_SUCCESS.equals(e)) {
+                            return CompletableFuture.completedFuture(null);
+                        } else {
+                            logger.warn("Error when modifying cluster server transport config: " + e);
+                            return AsyncUtils.newFailedFuture(new RuntimeException(e));
+                        }
+                    });
         } catch (Exception ex) {
             logger.warn("Error when modifying cluster server transport config", ex);
             return AsyncUtils.newFailedFuture(ex);
@@ -645,17 +647,17 @@ public class SentinelApiClient {
         try {
             URIBuilder uriBuilder = new URIBuilder();
             uriBuilder.setScheme("http").setHost(ip).setPort(port)
-                .setPath(MODIFY_CLUSTER_SERVER_NAMESPACE_SET_PATH)
-                .setParameter("data", JSON.toJSONString(set));
+                    .setPath(MODIFY_CLUSTER_SERVER_NAMESPACE_SET_PATH)
+                    .setParameter("data", JSON.toJSONString(set));
             return executeCommand(MODIFY_CLUSTER_SERVER_NAMESPACE_SET_PATH, uriBuilder.build())
-                .thenCompose(e -> {
-                    if (CommandConstants.MSG_SUCCESS.equals(e)) {
-                        return CompletableFuture.completedFuture(null);
-                    } else {
-                        logger.warn("Error when modifying cluster server NamespaceSet: " + e);
-                        return AsyncUtils.newFailedFuture(new RuntimeException(e));
-                    }
-                });
+                    .thenCompose(e -> {
+                        if (CommandConstants.MSG_SUCCESS.equals(e)) {
+                            return CompletableFuture.completedFuture(null);
+                        } else {
+                            logger.warn("Error when modifying cluster server NamespaceSet: " + e);
+                            return AsyncUtils.newFailedFuture(new RuntimeException(e));
+                        }
+                    });
         } catch (Exception ex) {
             logger.warn("Error when modifying cluster server NamespaceSet", ex);
             return AsyncUtils.newFailedFuture(ex);
@@ -669,9 +671,9 @@ public class SentinelApiClient {
         try {
             URIBuilder uriBuilder = new URIBuilder();
             uriBuilder.setScheme("http").setHost(ip).setPort(port)
-                .setPath(FETCH_CLUSTER_SERVER_BASIC_INFO_PATH);
+                    .setPath(FETCH_CLUSTER_SERVER_BASIC_INFO_PATH);
             return executeCommand(FETCH_CLUSTER_SERVER_BASIC_INFO_PATH, uriBuilder.build())
-                .thenApply(r -> JSON.parseObject(r, ClusterServerStateVO.class));
+                    .thenApply(r -> JSON.parseObject(r, ClusterServerStateVO.class));
         } catch (Exception ex) {
             logger.warn("Error when fetching cluster sever all config and basic info", ex);
             return AsyncUtils.newFailedFuture(ex);
