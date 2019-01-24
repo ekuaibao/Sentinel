@@ -15,11 +15,6 @@
  */
 package com.alibaba.csp.sentinel.transport.command.netty;
 
-import java.nio.charset.Charset;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import com.alibaba.csp.sentinel.command.CommandHandler;
 import com.alibaba.csp.sentinel.command.CommandRequest;
 import com.alibaba.csp.sentinel.command.CommandResponse;
@@ -27,30 +22,25 @@ import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.log.CommandCenterLog;
 import com.alibaba.csp.sentinel.transport.command.codec.CodecRegistry;
 import com.alibaba.csp.sentinel.transport.command.codec.Encoder;
+import com.alibaba.csp.sentinel.transport.config.TransportConfig;
 import com.alibaba.csp.sentinel.transport.util.HttpCommandUtils;
 import com.alibaba.csp.sentinel.util.StringUtil;
-
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpHeaderValues;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpUtil;
-import io.netty.handler.codec.http.HttpVersion;
-import io.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.handler.codec.http.*;
 
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import java.nio.charset.Charset;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import static io.netty.handler.codec.http.HttpResponseStatus.*;
 
 /**
  * Netty-based HTTP server handler for command center.
- *
+ * <p>
  * Note: HTTP chunked is not tested!
  *
  * @author Eric Zhao
@@ -66,7 +56,7 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
-        FullHttpRequest httpRequest = (FullHttpRequest)msg;
+        FullHttpRequest httpRequest = (FullHttpRequest) msg;
         try {
             CommandRequest request = parseRequest(httpRequest);
             if (StringUtil.isBlank(HttpCommandUtils.getTarget(request))) {
@@ -82,7 +72,7 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
     }
 
     private void handleRequest(CommandRequest request, ChannelHandlerContext ctx, boolean keepAlive)
-        throws Exception {
+            throws Exception {
         String commandName = HttpCommandUtils.getTarget(request);
         // Find the matching command handler.
         CommandHandler<?> commandHandler = getHandler(commandName);
@@ -109,8 +99,8 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
 
     private void writeErrorResponse(int statusCode, String message, ChannelHandlerContext ctx) {
         FullHttpResponse httpResponse = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
-            HttpResponseStatus.valueOf(statusCode),
-            Unpooled.copiedBuffer(message, Charset.forName(SentinelConfig.charset())));
+                HttpResponseStatus.valueOf(statusCode),
+                Unpooled.copiedBuffer(message, Charset.forName(SentinelConfig.charset())));
 
         httpResponse.headers().set("Content-Type", "text/plain; charset=" + SentinelConfig.charset());
         ctx.write(httpResponse);
@@ -119,17 +109,17 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
     }
 
     private void writeResponse(CommandResponse response, ChannelHandlerContext ctx, boolean keepAlive)
-        throws Exception {
+            throws Exception {
         byte[] body;
         if (response.isSuccess()) {
             if (response.getResult() == null) {
-                body = new byte[] {};
+                body = new byte[]{};
             } else {
                 Encoder encoder = pickEncoder(response.getResult().getClass());
                 if (encoder == null) {
                     writeErrorResponse(INTERNAL_SERVER_ERROR.code(), SERVER_ERROR_MESSAGE, ctx);
                     CommandCenterLog.warn("Error when encoding object",
-                        new IllegalStateException("No compatible encoder"));
+                            new IllegalStateException("No compatible encoder"));
                     return;
                 }
                 body = encoder.encode(response.getResult());
@@ -141,7 +131,7 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
         HttpResponseStatus status = response.isSuccess() ? OK : BAD_REQUEST;
 
         FullHttpResponse httpResponse = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status,
-            Unpooled.copiedBuffer(body));
+                Unpooled.copiedBuffer(body));
 
         httpResponse.headers().set("Content-Type", "text/plain; charset=" + SentinelConfig.charset());
 
@@ -189,11 +179,12 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<Object> {
         if (StringUtil.isEmpty(uri)) {
             return "";
         }
+        uri = TransportConfig.removeContextPath(uri);
         String[] arr = uri.split("/");
-        if (arr.length < 2) {
+        if (arr.length < 1) {
             return "";
         }
-        return arr[1];
+        return arr[0];
     }
 
     private CommandHandler getHandler(String commandName) {

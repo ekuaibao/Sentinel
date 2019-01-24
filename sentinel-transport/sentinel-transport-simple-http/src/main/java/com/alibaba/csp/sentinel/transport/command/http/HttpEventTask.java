@@ -15,25 +15,20 @@
  */
 package com.alibaba.csp.sentinel.transport.command.http;
 
-import java.io.BufferedReader;
-import java.io.Closeable;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.Socket;
-import java.net.URLDecoder;
-import java.nio.charset.Charset;
-
 import com.alibaba.csp.sentinel.command.CommandHandler;
 import com.alibaba.csp.sentinel.command.CommandRequest;
 import com.alibaba.csp.sentinel.command.CommandResponse;
 import com.alibaba.csp.sentinel.config.SentinelConfig;
 import com.alibaba.csp.sentinel.log.CommandCenterLog;
 import com.alibaba.csp.sentinel.transport.command.SimpleHttpCommandCenter;
+import com.alibaba.csp.sentinel.transport.config.TransportConfig;
 import com.alibaba.csp.sentinel.transport.util.HttpCommandUtils;
 import com.alibaba.csp.sentinel.util.StringUtil;
+
+import java.io.*;
+import java.net.Socket;
+import java.net.URLDecoder;
+import java.nio.charset.Charset;
 
 /***
  * The task handles incoming command request in HTTP protocol.
@@ -198,6 +193,7 @@ public class HttpEventTask implements Runnable {
         int ask = line.indexOf('?') == -1 ? line.lastIndexOf(' ') : line.indexOf('?');
         int space = line.lastIndexOf(' ');
         String target = line.substring(start != -1 ? start + 1 : 0, ask != -1 ? ask : line.length());
+        target = TransportConfig.removeContextPath(target);
         request.addMetadata(HttpCommandUtils.REQUEST_TARGET, target);
         if (ask == -1 || ask == space) {
             return request;

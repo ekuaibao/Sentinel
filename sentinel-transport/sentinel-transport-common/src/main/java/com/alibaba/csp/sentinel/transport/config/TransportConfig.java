@@ -29,8 +29,10 @@ public class TransportConfig {
     public static final String SERVER_PORT = "csp.sentinel.api.port";
     public static final String HEARTBEAT_INTERVAL_MS = "csp.sentinel.heartbeat.interval.ms";
     public static final String HEARTBEAT_CLIENT_IP = "csp.sentinel.heartbeat.client.ip";
+    public static final String CONTEXT_PATH_ENV = "csp.sentinel.api.context";
 
     private static int runtimePort = -1;
+    private static String contextPath;
 
     /**
      * Get heartbeat interval in milliseconds.
@@ -93,5 +95,44 @@ public class TransportConfig {
             ip = HostNameUtil.getIp();
         }
         return ip;
+    }
+
+    public static String getContextPath() {
+        if (contextPath == null) {
+            contextPath = System.getProperty(CONTEXT_PATH_ENV);
+            if (contextPath == null) {
+                contextPath = "";
+            } else {
+                if (contextPath.startsWith("/")) {
+                    contextPath = contextPath.substring(1);
+                }
+                if (contextPath.endsWith("/")) {
+                    contextPath = contextPath.substring(0, contextPath.length() - 1);
+                }
+            }
+        }
+        return contextPath;
+    }
+
+    public static String withContextPath(String path) {
+        String contextPath = getContextPath();
+        if (contextPath.isEmpty()) {
+            return path;
+        }
+        return contextPath + "/" + path;
+    }
+
+    public static String removeContextPath(String path) {
+        String contextPath = getContextPath();
+        if (path.startsWith("/")) {
+            path = path.substring(1);
+        }
+        if (path.startsWith(contextPath)) {
+            path = path.substring(contextPath.length());
+        }
+        if (path.startsWith("/")) {
+            path = path.substring(1);
+        }
+        return path;
     }
 }

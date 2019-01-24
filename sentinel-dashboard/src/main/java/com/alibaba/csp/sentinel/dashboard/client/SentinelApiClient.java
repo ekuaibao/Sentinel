@@ -36,6 +36,7 @@ import com.alibaba.csp.sentinel.dashboard.util.AsyncUtils;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
 import com.alibaba.csp.sentinel.slots.system.SystemRule;
+import com.alibaba.csp.sentinel.transport.config.TransportConfig;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.fastjson.JSON;
@@ -78,26 +79,24 @@ public class SentinelApiClient {
 
     private static final Charset DEFAULT_CHARSET = Charset.forName(SentinelConfig.charset());
 
-    public static final String CONTEXT_PATH = "api/sentinel/";
+    private static final String RESOURCE_URL_PATH = TransportConfig.withContextPath("jsonTree");
+    private static final String CLUSTER_NODE_PATH = TransportConfig.withContextPath("clusterNode");
+    private static final String GET_RULES_PATH = TransportConfig.withContextPath("getRules");
+    private static final String SET_RULES_PATH = TransportConfig.withContextPath("setRules");
+    private static final String GET_PARAM_RULE_PATH = TransportConfig.withContextPath("getParamFlowRules");
+    private static final String SET_PARAM_RULE_PATH = TransportConfig.withContextPath("setParamFlowRules");
 
-    private static final String RESOURCE_URL_PATH = CONTEXT_PATH + "jsonTree";
-    private static final String CLUSTER_NODE_PATH = CONTEXT_PATH + "clusterNode";
-    private static final String GET_RULES_PATH = CONTEXT_PATH + "getRules";
-    private static final String SET_RULES_PATH = CONTEXT_PATH + "setRules";
-    private static final String GET_PARAM_RULE_PATH = CONTEXT_PATH + "getParamFlowRules";
-    private static final String SET_PARAM_RULE_PATH = CONTEXT_PATH + "setParamFlowRules";
+    private static final String FETCH_CLUSTER_MODE_PATH = TransportConfig.withContextPath("getClusterMode");
+    private static final String MODIFY_CLUSTER_MODE_PATH = TransportConfig.withContextPath("setClusterMode");
+    private static final String FETCH_CLUSTER_CLIENT_CONFIG_PATH = TransportConfig.withContextPath("cluster/client/fetchConfig");
+    private static final String MODIFY_CLUSTER_CLIENT_CONFIG_PATH = TransportConfig.withContextPath("cluster/client/modifyConfig");
 
-    private static final String FETCH_CLUSTER_MODE_PATH = CONTEXT_PATH + "getClusterMode";
-    private static final String MODIFY_CLUSTER_MODE_PATH = CONTEXT_PATH + "setClusterMode";
-    private static final String FETCH_CLUSTER_CLIENT_CONFIG_PATH = CONTEXT_PATH + "cluster/client/fetchConfig";
-    private static final String MODIFY_CLUSTER_CLIENT_CONFIG_PATH = CONTEXT_PATH + "cluster/client/modifyConfig";
+    private static final String FETCH_CLUSTER_SERVER_ALL_CONFIG_PATH = TransportConfig.withContextPath("cluster/server/fetchConfig");
+    private static final String FETCH_CLUSTER_SERVER_BASIC_INFO_PATH = TransportConfig.withContextPath("cluster/server/info");
 
-    private static final String FETCH_CLUSTER_SERVER_ALL_CONFIG_PATH = CONTEXT_PATH + "cluster/server/fetchConfig";
-    private static final String FETCH_CLUSTER_SERVER_BASIC_INFO_PATH = CONTEXT_PATH + "cluster/server/info";
-
-    private static final String MODIFY_CLUSTER_SERVER_TRANSPORT_CONFIG_PATH = CONTEXT_PATH + "cluster/server/modifyTransportConfig";
-    private static final String MODIFY_CLUSTER_SERVER_FLOW_CONFIG_PATH = CONTEXT_PATH + "cluster/server/modifyFlowConfig";
-    private static final String MODIFY_CLUSTER_SERVER_NAMESPACE_SET_PATH = CONTEXT_PATH + "cluster/server/modifyNamespaceSet";
+    private static final String MODIFY_CLUSTER_SERVER_TRANSPORT_CONFIG_PATH = TransportConfig.withContextPath("cluster/server/modifyTransportConfig");
+    private static final String MODIFY_CLUSTER_SERVER_FLOW_CONFIG_PATH = TransportConfig.withContextPath("cluster/server/modifyFlowConfig");
+    private static final String MODIFY_CLUSTER_SERVER_NAMESPACE_SET_PATH = TransportConfig.withContextPath("cluster/server/modifyNamespaceSet");
 
     private static final String FLOW_RULE_TYPE = "flow";
     private static final String DEGRADE_RULE_TYPE = "degrade";

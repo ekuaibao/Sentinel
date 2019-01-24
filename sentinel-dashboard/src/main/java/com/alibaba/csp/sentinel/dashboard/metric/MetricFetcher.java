@@ -24,6 +24,7 @@ import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.repository.metric.MetricsRepository;
 import com.alibaba.csp.sentinel.dashboard.util.MachineUtils;
 import com.alibaba.csp.sentinel.node.metric.MetricNode;
+import com.alibaba.csp.sentinel.transport.config.TransportConfig;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -64,7 +65,7 @@ public class MetricFetcher {
     private static final long MAX_LAST_FETCH_INTERVAL_MS = 1000 * 15;
     private static final long FETCH_INTERVAL_SECOND = 6;
     private static final Charset DEFAULT_CHARSET = Charset.forName(SentinelConfig.charset());
-    private final static String METRIC_URL_PATH = SentinelApiClient.CONTEXT_PATH + "metric";
+    private final static String METRIC_URL_PATH = TransportConfig.withContextPath("metric");
     private static Logger logger = LoggerFactory.getLogger(MetricFetcher.class);
     private final long intervalSecond = 1;
 
